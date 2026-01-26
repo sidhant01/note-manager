@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz</title>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #0b0f19;
+      color: #e7eaf3;
+      margin: 0;
+      padding: 24px;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+    }
+
+    .exam-box {
+      width: min(720px, 100%);
+      background: #121a2a;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    #counter {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-bottom: 10px;
+    }
+
+    #question {
+      margin: 0 0 16px;
+      font-size: 20px;
+      line-height: 1.35;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .options button {
+      width: 100%;
+      text-align: left;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      color: inherit;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .options button:hover:enabled {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.18);
+    }
+
+    .options button:disabled {
+      cursor: not-allowed;
+      opacity: 0.95;
+    }
+
+    .options button.correct {
+      border-color: rgba(46, 204, 113, 0.7);
+      background: rgba(46, 204, 113, 0.12);
+    }
+
+    .options button.wrong {
+      border-color: rgba(231, 76, 60, 0.75);
+      background: rgba(231, 76, 60, 0.12);
+    }
+
+    .explanation {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-top: 10px;
+      line-height: 1.45;
+    }
+
+    #nextBtn {
+      display: none;
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      color: inherit;
+      cursor: pointer;
+    }
+
+    #nextBtn:hover {
+      background: rgba(255,255,255,0.11);
+    }
+
+    .score {
+      width: min(720px, 100%);
+      background: #121a2a;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="exam-box" id="quiz">
+    <div id="counter"></div>
+    <h2 id="question"></h2>
+    <div id="options" class="options"></div>
+    <div id="explanation" class="explanation" aria-live="polite"></div>
+    <button id="nextBtn" type="button">Next</button>
+  </div>
+
+  <div id="score" class="score" style="display:none;"></div>
+
+  <script>
+    // ✅ Put your question bank here
+    const questions = [
+      {
+        q: "Under the CFA Institute Standards, which is Standard V(C)?",
+        options: [
+          "Diligence and Reasonable Basis",
+          "Communication with Clients and Prospective Clients",
+          "Record Retention"
+        ],
+        answer: 2,
+        explanation: "Standard V(C) is Record Retention (under Investment Analysis, Recommendations, and Actions)."
+      }
+      // Add more questions like the object above
+    ];
+
+    let current = 0;
+    let score = 0;
+
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const explanationEl = document.getElementById('explanation');
+    const nextBtn = document.getElementById('nextBtn');
+    const scoreEl = document.getElementById('score');
+    const counterEl = document.getElementById('counter');
+
+    function loadQuestion() {
+      const q = questions[current];
+      questionEl.textContent = q.q;
+
+      optionsEl.innerHTML = '';
+      explanationEl.style.display = 'none';
+      nextBtn.style.display = 'none';
+
+      counterEl.textContent = `Question ${current + 1} of ${questions.length}`;
+
+      q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => selectAnswer(btn, i));
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(btn, i) {
+      const q = questions[current];
+      const buttons = optionsEl.querySelectorAll('button');
+      buttons.forEach(b => b.disabled = true);
+
+      if (i === q.answer) {
+        btn.classList.add('correct');
+        score++;
+      } else {
+        btn.classList.add('wrong');
+        if (buttons[q.answer]) buttons[q.answer].classList.add('correct');
+      }
+
+      explanationEl.textContent = q.explanation;
+      explanationEl.style.display = 'block';
+      nextBtn.style.display = 'inline-block';
+    }
+
+    nextBtn.addEventListener('click', () => {
+      current++;
+      if (current < questions.length) {
+        loadQuestion();
+      } else {
+        showScore();
+      }
+    });
+
+    function showScore() {
+      document.getElementById('quiz').style.display = 'none';
+      scoreEl.style.display = 'block';
+      scoreEl.innerHTML =
+        `Final Score: <strong>${score} / ${questions.length}</strong><br><br>` +
+        `Exam mindset reminder:<br>` +
+        `Choose the most conservative, client-first, disclosure-heavy answer.`;
+    }
+
+    // Start
+    loadQuestion();
+  </script>
+</body>
+</html>
