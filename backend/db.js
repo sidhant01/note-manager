@@ -31,7 +31,10 @@ function addSnippetToDB(category, snippet) {
 
 function updateSummaryInDB(category, summary) {
     console.log("required new summary in db: ", summary);
-    console.log("updated summary in db: ", db.prepare(`INSERT OR REPLACE INTO summaries (category, summary) VALUES (?, ?)`).run(category, summary));
+    console.log("updated summary in db: ", 
+        db.prepare(
+            `INSERT OR REPLACE INTO summaries (category, summary) VALUES (?, ?)`
+        ).run(category, summary));
     console.log(getSummaryFromDB(category));
 }
 

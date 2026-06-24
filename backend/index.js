@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
-import { GoogleGenAI } from '@google/genai';
+import { AzureOpenAI } from 'openai';
 import {
     getSummaryFromDB,
     getNotesFromDB,
@@ -16,7 +16,14 @@ import {
 
 const app = express();
 const port = 3000;
-const ai = new GoogleGenAI({});
+
+const client = new AzureOpenAI({
+  apiKey: process.env.AZURE_OPENAI_API_KEY,
+  endpoint: process.env.AZURE_OPENAI_ENDPOINT,
+  apiVersion: "2024-10-21",
+  deployment: process.env.AZURE_OPENAI_DEPLOYMENT
+});
+const deploymentName = process.env.AZURE_OPENAI_DEPLOYMENT;
 
 app.use(express.json());
 
@@ -74,14 +81,23 @@ async function findCategory(snippet) {
     ? `Categories: ${existingCategories.join(', ')}\nSnippet: ${snippet}`
     : `No existing categories.\nSnippet: ${snippet}`;
 
-  const prompt = CATEGORIZATION_PROMPT + '\n\n' + userMessage;
+  // const prompt = CATEGORIZATION_PROMPT + '\n\n' + userMessage;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
+  // const response = await ai.models.generateContent({
+  //   model: "gemini-2.5-flash",
+  //   contents: prompt,
+  // });
+
+  const response = await client.chat.completions.create({
+    model: deploymentName,
+    messages: [
+      { role: "system", content: CATEGORIZATION_PROMPT },
+      { role: "user", content: userMessage }
+    ]
   });
 
-  const result = response.candidates[0].content.parts[0].text;
+  console.log(response.choices[0].message);
+  const result = response.choices[0].message.content;
   
   console.log("Json object: ", JSON.parse(getCleanedText(result)));
   return JSON.parse(getCleanedText(result));
@@ -93,16 +109,16 @@ function getCategoryFromUser(suggested, closest) {
 
 async function synthesizeNote(currentSummary, newSnippet) {
   const userMessage = `Current Summary: ${currentSummary || 'N/A'}\nNew Snippet: ${newSnippet}`;
-  console.log("Synthesis user message: ", userMessage);
-  const prompt = SYNTHESIZATION_PROMPT + '\n\n' + userMessage;
-  console.log("Synthesis prompt: ", prompt);
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
+
+  const response = await client.chat.completions.create({
+    model: deploymentName,
+    messages: [
+      { role: "system", content: SYNTHESIZATION_PROMPT },
+      { role: "user", content: userMessage }
+    ]
   });
-  const result = response.candidates[0].content.parts[0].text;
-  console.log("Synthesized note result: ", result);
-  console.log("Synthesized note cleaned: ", getCleanedText(result));
+
+  const result = response.choices[0].message.content;
   return getCleanedText(result);
 }
 
@@ -140,9 +156,10 @@ app.get('/', (req, res) => {
   res.send('Note Manager API is running!');
 });
 
-app.get('/api/snippets', (req, res) => {
-  // res.json(snippets);
-});
+app.get('/api/snippets/:category', (req, res) => {
+  const { category } = req.params;
+  res.json(getNotesFromDB(category));
+})
 
 app.get('/api/notes', (req, res) => {
   // res.json(notes);
@@ -163,9 +180,4 @@ app.get('/api/categories/:category', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
-});
-
-app.get('/api/models', async (req, res) => {
-  const models = await ai.listModels();
-  res.json(models);
 });
