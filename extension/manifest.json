@@ -1,0 +1,19 @@
+{
+  "name": "Note Manager",
+  "description": "Base Level Extension",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "extension_icon.png"
+  },
+  "permissions": [
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
