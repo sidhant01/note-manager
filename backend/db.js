@@ -22,7 +22,7 @@ function getCategoriesFromDB() {
 }
 
 function addCategoryToDB(category) {
-    db.prepare(`INSERT INTO categories (category) VALUES (?)`).run(category);
+    db.prepare(`INSERT OR IGNORE INTO categories (category) VALUES (?)`).run(category);
 }
 
 function addSnippetToDB(category, snippet) {
