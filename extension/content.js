@@ -37,40 +37,42 @@ function showOverlay({ snippet, suggested, matches = [], allCategories = [], err
       }
       .nm-card {
         width: 360px; max-width: calc(100vw - 32px); max-height: calc(100vh - 32px);
-        background: #fff; border-radius: 14px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.35); padding: 20px;
-        color: #0f172a;
+        background: #fbf6e7; border: 1px solid #e8dcb5; border-radius: 14px;
+        box-shadow: 0 12px 40px rgba(80, 60, 10, 0.18); padding: 22px;
+        color: #5c4a1f;
       }
-      .nm-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-      .nm-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; margin: 14px 0 6px; }
+      .nm-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: #6b5618; }
+      .nm-label { font-size: 11px; font-weight: 700; letter-spacing: 0.02em; color: #9a8442; margin: 20px 0 8px; }
       .nm-chips { display: flex; flex-wrap: wrap; gap: 8px; }
       .nm-chip {
-        cursor: pointer; border: 1px solid #cbd5e1; background: #fff;
-        border-radius: 999px; padding: 6px 14px; font-size: 13px; color: #0f172a;
+        cursor: pointer; border: 1px solid #e3d6ab; background: #fdfaf0;
+        border-radius: 999px; padding: 6px 14px; font-size: 13px; color: #5c4a1f;
         white-space: nowrap; transition: all 0.12s ease;
       }
-      .nm-chip:hover { border-color: #6366f1; background: #eef2ff; }
+      .nm-chip:hover { border-color: #cdb877; background: #f3ead0; }
+      .nm-chip-lg { font-size: 15px; font-weight: 600; padding: 9px 20px; }
       .nm-field { position: relative; }
       .nm-input {
-        width: 100%; border: 1px solid #cbd5e1; border-radius: 8px;
-        padding: 8px 12px; font-size: 14px;
+        width: 100%; border: 1px solid #e3d6ab; border-radius: 8px;
+        padding: 8px 12px; font-size: 14px; background: #fffdf8; color: #5c4a1f;
       }
-      .nm-input:focus { outline: none; border-color: #6366f1; }
+      .nm-input::placeholder { color: #b9a877; }
+      .nm-input:focus { outline: none; border-color: #cda94a; }
       .nm-dropdown {
         position: absolute; left: 0; right: 0; top: calc(100% + 4px);
-        background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        background: #fffdf8; border: 1px solid #e3d6ab; border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(80, 60, 10, 0.14);
         max-height: 200px; overflow-y: auto; z-index: 10; display: none;
       }
       .nm-dropdown.open { display: block; }
       .nm-opt {
-        padding: 8px 12px; font-size: 14px; cursor: pointer; color: #0f172a;
+        padding: 8px 12px; font-size: 14px; cursor: pointer; color: #5c4a1f;
       }
-      .nm-opt:hover { background: #eef2ff; }
-      .nm-opt-empty { padding: 8px 12px; font-size: 13px; color: #94a3b8; cursor: default; }
-      .nm-opt-empty b { color: #4f46e5; }
-      .nm-saved { font-size: 14px; color: #475569; }
-      .nm-saved b { color: #4f46e5; }
+      .nm-opt:hover { background: #f3ead0; }
+      .nm-opt-empty { padding: 8px 12px; font-size: 13px; color: #a8965f; cursor: default; }
+      .nm-opt-empty b { color: #7a6320; }
+      .nm-saved { font-size: 14px; color: #5c4a1f; }
+      .nm-saved b { color: #7a6320; }
       .nm-error { color: #b91c1c; font-size: 14px; padding: 8px 0; }
     </style>
     <div class="nm-backdrop">
@@ -87,7 +89,7 @@ function showOverlay({ snippet, suggested, matches = [], allCategories = [], err
   });
 
   if (error) {
-    card.innerHTML = `<div class="nm-title">Choose a category</div><div class="nm-error">${escapeHtml(error)}</div>`;
+    card.innerHTML = `<div class="nm-title">choose a category</div><div class="nm-error">${escapeHtml(error)}</div>`;
     return;
   }
 
@@ -101,22 +103,22 @@ function renderChooser(card, { snippet, suggested, matches, allCategories }) {
   const otherMatches = [...new Set(matches)].filter((m) => m && m !== suggested);
 
   const suggestedSection = suggested
-    ? `<div class="nm-label">Suggested</div>
-       <div class="nm-chips">${chip(suggested)}</div>`
+    ? `<div class="nm-label">suggested</div>
+       <div class="nm-chips">${chip(suggested, true)}</div>`
     : '';
 
   const matchesSection = otherMatches.length
-    ? `<div class="nm-label">Close matches</div>
-       <div class="nm-chips">${otherMatches.map(chip).join('')}</div>`
+    ? `<div class="nm-label">close matches</div>
+       <div class="nm-chips">${otherMatches.map((m) => chip(m)).join('')}</div>`
     : '';
 
   card.innerHTML = `
-    <div class="nm-title">Choose a category</div>
+    <div class="nm-title">choose a category</div>
     ${suggestedSection}
     ${matchesSection}
-    <div class="nm-label">Type a category</div>
+    <div class="nm-label">or type a category</div>
     <div class="nm-field">
-      <input class="nm-input" type="text" placeholder="Type a category" autocomplete="off" />
+      <input class="nm-input" type="text" placeholder="type a category" autocomplete="off" />
       <div class="nm-dropdown"></div>
     </div>
   `;
@@ -129,10 +131,10 @@ function renderChooser(card, { snippet, suggested, matches, allCategories }) {
     if (!cat) return;
     chrome.runtime.sendMessage({ type: 'SAVE', snippet, category: cat }, (resp) => {
       if (resp && resp.ok) {
-        card.innerHTML = `<div class="nm-title">Saved \u2713</div><div class="nm-saved">Saved to <b>${escapeHtml(cat)}</b>.</div>`;
+        card.innerHTML = `<div class="nm-title">saved \u2713</div><div class="nm-saved">saved to <b>${escapeHtml(cat)}</b>.</div>`;
         setTimeout(removeOverlay, 1100);
       } else {
-        card.innerHTML = `<div class="nm-title">Choose a category</div><div class="nm-error">Failed to save. Is the Note Manager server running?</div>`;
+        card.innerHTML = `<div class="nm-title">choose a category</div><div class="nm-error">Failed to save. Is the Note Manager server running?</div>`;
       }
     });
   }
@@ -187,8 +189,8 @@ function renderChooser(card, { snippet, suggested, matches, allCategories }) {
   });
 }
 
-function chip(name) {
-  return `<button class="nm-chip" data-cat="${escapeAttr(name)}">${escapeHtml(name)}</button>`;
+function chip(name, large = false) {
+  return `<button class="nm-chip${large ? ' nm-chip-lg' : ''}" data-cat="${escapeAttr(name)}">${escapeHtml(name)}</button>`;
 }
 
 function escapeHtml(str) {
