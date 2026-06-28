@@ -13,6 +13,7 @@ import {
     removeCategoryFromDB,
     removeSummaryFromDB
 } from './db.js';
+import { syncCategoryToNotion } from './notion.js';
 
 const app = express();
 const port = 3000;
@@ -106,6 +107,13 @@ async function synthesizeAndStore(category, snippet) {
   const currentSummary = getSummaryFromDB(category);
   const newSummary = await synthesizeNote(currentSummary, snippet);
   updateSummaryInDB(category, newSummary);
+
+  // Mirror the updated summary into Notion (no-op if Notion isn't configured).
+  try {
+    await syncCategoryToNotion(category, newSummary);
+  } catch (err) {
+    console.error('Notion sync failed for category', category, err.message);
+  }
 }
 
 // Step 1: categorize a snippet WITHOUT saving. Returns the AI's suggestion,
